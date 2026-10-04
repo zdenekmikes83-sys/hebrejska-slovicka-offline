@@ -52,9 +52,9 @@ function normalizedLessons(payload) {
       id: item.id ?? lessonIndex,
       title: item.title || item.name || `Lekce ${lessonIndex + 1}`,
       pairs: (item.pairs || []).map((pair, pairIndex) => ({
-        id: pair.id ?? pairIndex,
-        hebrew: pair.hebrew || "",
-        czech: pair.czech || ""
+        id: Array.isArray(pair) ? pairIndex : (pair.id ?? pairIndex),
+        hebrew: Array.isArray(pair) ? (pair[0] || "") : (pair.hebrew || ""),
+        czech: Array.isArray(pair) ? (pair[1] || "") : (pair.czech || "")
       }))
     }))
     .filter((item) => item.pairs.length)
