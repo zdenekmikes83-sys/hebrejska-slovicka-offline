@@ -1,0 +1,96 @@
+name: Sestavit offline aplikace
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: offline-release
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows 11
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Instalace nástrojů
+        run: npm install
+      - name: Vložení aktuálního slovníku
+        run: npm run fetch-lessons
+      - name: Sestavení EXE
+        run: npm run dist:win
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: release/*.exe
+          if-no-files-found: error
+
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - name: Instalace nástrojů
+        run: npm install
+      - name: Vložení aktuálního slovníku
+        run: npm run fetch-lessons
+      - name: Vytvoření projektu Android
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Sestavení APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+      - name: Přejmenování APK
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/debug/app-debug.apk release/Hebrejska-slovicka-Android.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: release/*.apk
+          if-no-files-found: error
+
+  release:
+    name: Zveřejnit soubory
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: Hebrejská slovíčka offline 1.0.0
+          body: |
+            Offline verze se zabudovaným slovníkem.
+
+            - Windows: stáhněte soubor EXE a spusťte jej.
+            - Android: stáhněte soubor APK a povolte instalaci z tohoto zdroje.
+
+            Aplikace neumožňuje editaci lekcí a po instalaci nepotřebuje připojení k internetu.
+          make_latest: true
+          overwrite_files: true
+          files: release/*
