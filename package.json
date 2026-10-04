@@ -1,0 +1,38 @@
+{
+  "name": "hebrejska-slovicka-offline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline aplikace pro procvičování hebrejských slovíček",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "fetch-lessons": "node scripts/fetch-lessons.mjs",
+    "dist:win": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "@capacitor/android": "7.6.9",
+    "@capacitor/cli": "7.6.9",
+    "@capacitor/core": "7.6.9",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "cz.musubikan.hebrejskaslovicka",
+    "productName": "Hebrejská slovíčka",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "www/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "artifactName": "Hebrejska-slovicka-Windows.${ext}"
+    },
+    "portable": {
+      "artifactName": "Hebrejska-slovicka-Windows.${ext}"
+    }
+  }
+}
