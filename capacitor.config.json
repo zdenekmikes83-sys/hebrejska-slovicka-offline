@@ -1,0 +1,8 @@
+{
+  "appId": "cz.musubikan.slovicka",
+  "appName": "Hebrejská slovíčka",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
